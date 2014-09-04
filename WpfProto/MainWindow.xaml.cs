@@ -24,31 +24,45 @@ namespace WpfProto
     {
         Processor m_Processor;
         Timer m_Timer;
+        int picNum = 1;
 
         public MainWindow()
         {
             InitializeComponent();
-            m_Processor = new Processor();
-            m_Processor.BeforeImagePath = System.IO.Path.GetFullPath(".\\..\\..\\..\\Images\\car2.jpg");
-            m_Timer = new Timer(Update, null, 1000, 4000);
+            m_Timer = new Timer(Update, null, 1000, 600);
         }
 
         private void Update(object state)
         {
-            m_Processor.Process(90);
+            m_Processor = new Processor();
+            m_Processor.BeforeImagePath = System.IO.Path.GetFullPath(".\\..\\..\\..\\Images\\car" + picNum + ".jpg");
 
-            Dispatcher.Invoke(new Action(() =>
-                ImageBefore.Source = BitmapSourceConvert.ToBitmapSource(m_Processor.BeforeImage)));          
-            Dispatcher.Invoke(new Action(() =>
-                ImageAfter.Source = BitmapSourceConvert.ToBitmapSource(m_Processor.AfterImage)));
+            string x, y, z;
 
+            x = Dispatcher.Invoke(() => TextBoxHMid.Text);
+            y = Dispatcher.Invoke(() => TextBoxHWidth.Text);
+            z = Dispatcher.Invoke(() => TextBoxHAfter.Text);
+
+            m_Processor.Process(int.Parse(z), 255, int.Parse(x), int.Parse(y));
+
+            if (m_Processor.BeforeImage != null && m_Processor.AfterImage != null)
+            {
+                Dispatcher.Invoke(new Action(() =>
+                    ImageBefore.Source = BitmapSourceConvert.ToBitmapSource(m_Processor.BeforeImage)));
+                Dispatcher.Invoke(new Action(() =>
+                    ImageAfter.Source = BitmapSourceConvert.ToBitmapSource(m_Processor.AfterImage)));
+            }
         }
+
         private void ButtonGo_Click(object sender, RoutedEventArgs e)
         {
-            m_Processor.Process(40);
+            Update(null);
+        }
 
-            ImageBefore.Source = BitmapSourceConvert.ToBitmapSource(m_Processor.BeforeImage);
-            ImageAfter.Source = BitmapSourceConvert.ToBitmapSource(m_Processor.AfterImage);
+        private void ButtonNext_Click(object sender, RoutedEventArgs e)
+        {
+            picNum++;
+            if (picNum > 7) picNum = 1;
         }
 
         public static class BitmapSourceConvert
